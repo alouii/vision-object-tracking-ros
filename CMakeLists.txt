@@ -10,12 +10,17 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(OpenCV REQUIRED)
+find_package(dynamic_reconfigure REQUIRED)
 
 catkin_package()
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+)
+
+generate_dynamic_reconfigure_options(
+  cfg/Vision.cfg
 )
 
 add_executable(vision_node src/vision_node.cpp)

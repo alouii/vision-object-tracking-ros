@@ -6,6 +6,8 @@
 #include <geometry_msgs/PointStamped.h>
 #include <opencv2/opencv.hpp>
 #include <limits>
+#include <dynamic_reconfigure/server.h>
+#include <vision_object_tracking/VisionConfig.h>
 
 class VisionNode {
 private:
@@ -19,6 +21,9 @@ private:
     std::string output_topic_;
     bool visualize_ = true;
     int area_threshold_ = 500; // minimum contour area to consider
+
+    // dynamic reconfigure server
+    std::shared_ptr<dynamic_reconfigure::Server<vision_object_tracking::VisionConfig>> dr_srv_;
 
     // HSV thresholds (can be tuned)
     int h_min_ = 0, s_min_ = 120, v_min_ = 70;
@@ -47,6 +52,12 @@ public:
         object_pub_ = nh_.advertise<geometry_msgs::PointStamped>(output_topic_, 1);
 
         if (visualize_) cv::namedWindow("Object Tracking", cv::WINDOW_AUTOSIZE);
+
+        // dynamic_reconfigure server
+        dr_srv_.reset(new dynamic_reconfigure::Server<vision_object_tracking::VisionConfig>(ros::NodeHandle("~")));
+        dynamic_reconfigure::Server<vision_object_tracking::VisionConfig>::CallbackType cb =
+            boost::bind(&VisionNode::reconfigCallback, this, _1, _2);
+        dr_srv_->setCallback(cb);
 
         ROS_INFO("Vision node started. Subscribed to %s", image_topic_.c_str());
     }

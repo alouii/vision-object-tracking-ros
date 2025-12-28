@@ -1,0 +1,14 @@
+visualize: true
+image_topic: /camera/image_raw
+output_topic: /object_position
+h_min: 0
+s_min: 120
+v_min: 70
+h_max: 10
+s_max: 255
+v_max: 255
+area_threshold: 500
+kp_angular: 0.002
+kp_linear: 0.001
+image_width: 640
+image_height: 480

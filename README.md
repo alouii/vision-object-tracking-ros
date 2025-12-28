@@ -83,4 +83,16 @@ The repository includes a GitHub Actions workflow (`.github/workflows/ros-ci.yml
 - If using headless systems, set `visualize=false` to avoid GUI issues.
 - Consider adding diagnostic topics (e.g., mask, debug images) and a parameter to publish mask images for offline debugging.
 
+## Screenshots 📷
+
+Example output (generated sample images are included in `docs/screenshots`):
+
+![Tracking view](docs/screenshots/tracking_view.png)
+
+_Tracking view: detected object is shown with a green marker and circle._
+
+![Mask view](docs/screenshots/mask_view.png)
+
+_Mask view: binary mask for the detected color (useful for tuning HSV thresholds)._ 
+
 If you'd like, I can add runtime checks, unit tests, or a launch file that exposes more tuning knobs.

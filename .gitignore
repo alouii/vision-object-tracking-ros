@@ -1,0 +1,26 @@
+# ROS build files
+/build
+/devel
+/log
+
+# Catkin
+CMakeFiles
+CMakeCache.txt
+catkin_generated
+install
+
+# Gazebo
+*.log
+*.dae~
+
+# OpenCV / temp
+*.swp
+*.tmp
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

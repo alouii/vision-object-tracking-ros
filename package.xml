@@ -1,0 +1,16 @@
+<package format="2">
+  <name>vision_object_tracking</name>
+  <version>0.0.1</version>
+  <description>Vision-based object tracking and robot control</description>
+
+  <maintainer email="you@email.com">Your Name</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>roscpp</depend>
+  <depend>image_transport</depend>
+  <depend>cv_bridge</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+</package>

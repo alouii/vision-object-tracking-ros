@@ -1,0 +1,21 @@
+<launch>
+
+  <!-- Launch Gazebo -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find vision_object_tracking)/world/tracking_world.world"/>
+    <arg name="paused" value="false"/>
+  </include>
+
+  <!-- Load Robot Description -->
+  <param name="robot_description"
+         command="$(find xacro)/xacro $(find vision_object_tracking)/urdf/robot.urdf"/>
+
+  <!-- Spawn Robot -->
+  <node name="spawn_robot" pkg="gazebo_ros" type="spawn_model"
+        args="-urdf -param robot_description -model vision_bot"
+        output="screen"/>
+
+  <!-- Vision + Control -->
+  <include file="$(find vision_object_tracking)/launch/vision_tracking.launch"/>
+
+</launch>

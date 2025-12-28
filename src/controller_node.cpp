@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/Twist.h>
 
 class ControllerNode {
@@ -23,9 +24,9 @@ public:
         ROS_INFO("Controller node started.");
     }
 
-    void objectCallback(const geometry_msgs::Point::ConstPtr& msg) {
-        double error_x = msg->x - image_width_ / 2.0;
-        double error_y = msg->y - image_height_ / 2.0;
+    void objectCallback(const geometry_msgs::PointStamped::ConstPtr& msg) {
+        double error_x = msg->point.x - image_width_ / 2.0;
+        double error_y = msg->point.y - image_height_ / 2.0;
 
         geometry_msgs::Twist cmd;
         cmd.angular.z = -kp_angular_ * error_x;

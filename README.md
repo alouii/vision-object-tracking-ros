@@ -41,6 +41,42 @@ Controller params (set in `vision_tracking.launch` or via rosparam):
 - `image_width`, `image_height` — used to compute the image center
 - `kp_angular`, `kp_linear` — proportional gains for control
 
+## Usage examples & parameter files ✅
+
+You can edit the shipped params at `config/vision_params.yaml` and launch with:
+
+```bash
+roslaunch vision_object_tracking vision_tracking.launch
+```
+
+To override a single param on the command line:
+
+```bash
+roslaunch vision_object_tracking vision_tracking.launch visualize:=false
+```
+
+# Dynamic reconfigure (tune at runtime)
+
+The package supports `dynamic_reconfigure`. Start the nodes and run:
+
+```bash
+rosrun rqt_reconfigure rqt_reconfigure
+```
+
+Then select `/vision_node` and adjust HSV thresholds, `area_threshold`, and `visualize` in real time.
+
+## CI, badges & contribution
+
+The repository includes a GitHub Actions workflow (`.github/workflows/ros-ci.yml`) that builds the package on pushes and PRs.
+
+[![ROS CI](https://github.com/alouii/vision-object-tracking-ros/actions/workflows/ros-ci.yml/badge.svg)](https://github.com/alouii/vision-object-tracking-ros/actions/workflows/ros-ci.yml)
+
+### Contributing
+
+- Fork the repository and open a PR with a clear description of the change.
+- Run `rosdep install --from-paths src --ignore-src -r -y` and `catkin_make` locally before submitting.
+- Prefer small, easily reviewable changes and include tests / demos where practical.
+
 ## Notes & Suggestions
 
 - Tweak HSV thresholds to match your target color under different lighting.

@@ -1,0 +1,34 @@
+name: ROS CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup ROS
+      uses: ros-tooling/setup-ros@v0.2
+      with:
+        ros-distro: 'noetic'
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y python3-catkin-tools python3-rosdep
+        sudo rosdep init || true
+        rosdep update
+        rosdep install --from-paths src --ignore-src -r -y || true
+
+    - name: Build (catkin)
+      run: |
+        catkin_make
+
+    - name: Run lint (optional)
+      run: |
+        # Install and run catkin_lint if desired
+        pip3 install catkin-lint || true
+        catkin-lint . || true

@@ -159,6 +159,24 @@ public:
             cv::waitKey(1);
         }
     }
+
+    void reconfigCallback(vision_object_tracking::VisionConfig &config, uint32_t level) {
+        h_min_ = config.h_min;
+        s_min_ = config.s_min;
+        v_min_ = config.v_min;
+
+        h_max_ = config.h_max;
+        s_max_ = config.s_max;
+        v_max_ = config.v_max;
+
+        visualize_ = config.visualize;
+        area_threshold_ = config.area_threshold;
+
+        ROS_INFO("Reconfigured: h[%d..%d] s[%d..%d] v[%d..%d] area=%d vis=%d",
+                 h_min_, h_max_, s_min_, s_max_, v_min_, v_max_, area_threshold_, visualize_);
+        if (visualize_) cv::namedWindow("Object Tracking", cv::WINDOW_AUTOSIZE);
+        else cv::destroyWindow("Object Tracking");
+    }
 };
 
 int main(int argc, char** argv) {

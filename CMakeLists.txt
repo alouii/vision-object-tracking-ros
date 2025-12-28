@@ -25,9 +25,11 @@ generate_dynamic_reconfigure_options(
 
 add_executable(vision_node src/vision_node.cpp)
 target_link_libraries(vision_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+add_dependencies(vision_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 
 add_executable(controller_node src/controller_node.cpp)
 target_link_libraries(controller_node ${catkin_LIBRARIES})
+add_dependencies(controller_node ${catkin_EXPORTED_TARGETS})
 
 # Install targets and launch files
 install(TARGETS vision_node controller_node

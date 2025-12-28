@@ -5,6 +5,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <geometry_msgs/PointStamped.h>
 #include <opencv2/opencv.hpp>
+#include <limits>
 
 class VisionNode {
 private:
@@ -87,6 +88,13 @@ public:
 
         if (contours.empty()) {
             ROS_DEBUG("No contours found");
+            // publish an explicit 'not found' message (NaN coordinates)
+            geometry_msgs::PointStamped nf_msg;
+            nf_msg.header = msg->header;
+            nf_msg.point.x = std::numeric_limits<double>::quiet_NaN();
+            nf_msg.point.y = std::numeric_limits<double>::quiet_NaN();
+            nf_msg.point.z = std::numeric_limits<double>::quiet_NaN();
+            object_pub_.publish(nf_msg);
             return;
         }
 
@@ -101,13 +109,27 @@ public:
         double area = cv::contourArea(*it);
         if (area < area_threshold_) {
             ROS_DEBUG("Largest contour too small: %f", area);
+            geometry_msgs::PointStamped nf_msg;
+            nf_msg.header = msg->header;
+            nf_msg.point.x = std::numeric_limits<double>::quiet_NaN();
+            nf_msg.point.y = std::numeric_limits<double>::quiet_NaN();
+            nf_msg.point.z = std::numeric_limits<double>::quiet_NaN();
+            object_pub_.publish(nf_msg);
             return;
         }
 
         const auto& largest_contour = *it;
 
         cv::Moments m = cv::moments(largest_contour);
-        if (std::abs(m.m00) < 1e-6) return;
+        if (std::abs(m.m00) < 1e-6) {
+            geometry_msgs::PointStamped nf_msg;
+            nf_msg.header = msg->header;
+            nf_msg.point.x = std::numeric_limits<double>::quiet_NaN();
+            nf_msg.point.y = std::numeric_limits<double>::quiet_NaN();
+            nf_msg.point.z = std::numeric_limits<double>::quiet_NaN();
+            object_pub_.publish(nf_msg);
+            return;
+        }
 
         geometry_msgs::PointStamped obj_msg;
         obj_msg.header = msg->header; // preserve timestamp and frame

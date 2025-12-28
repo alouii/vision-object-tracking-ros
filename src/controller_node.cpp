@@ -2,6 +2,7 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/Twist.h>
+#include <cmath>
 
 class ControllerNode {
 private:
@@ -34,6 +35,15 @@ public:
     }
 
     void objectCallback(const geometry_msgs::PointStamped::ConstPtr& msg) {
+        // if object not found (NaN coordinates), stop the robot
+        if (std::isnan(msg->point.x) || std::isnan(msg->point.y)) {
+            geometry_msgs::Twist stop;
+            stop.angular.z = 0.0;
+            stop.linear.x = 0.0;
+            cmd_pub_.publish(stop);
+            return;
+        }
+
         double error_x = msg->point.x - image_width_ / 2.0;
         double error_y = msg->point.y - image_height_ / 2.0;
 

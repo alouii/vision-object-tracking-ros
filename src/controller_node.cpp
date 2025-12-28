@@ -14,14 +14,23 @@ private:
 
     int image_width_ = 640;
     int image_height_ = 480;
+    std::string object_topic_;
 
 public:
     ControllerNode() {
-        object_sub_ = nh_.subscribe("/object_position", 1,
+        ros::NodeHandle pnh("~");
+
+        pnh.param("kp_angular", kp_angular_, kp_angular_);
+        pnh.param("kp_linear", kp_linear_, kp_linear_);
+        pnh.param("image_width", image_width_, image_width_);
+        pnh.param("image_height", image_height_, image_height_);
+        pnh.param("object_topic", object_topic_, std::string("/object_position"));
+
+        object_sub_ = nh_.subscribe(object_topic_, 1,
                                    &ControllerNode::objectCallback, this);
         cmd_pub_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
 
-        ROS_INFO("Controller node started.");
+        ROS_INFO("Controller node started. Subscribed to %s", object_topic_.c_str());
     }
 
     void objectCallback(const geometry_msgs::PointStamped::ConstPtr& msg) {

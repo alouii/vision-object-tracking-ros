@@ -26,6 +26,8 @@
 		<!-- Image size should match camera plugin in URDF -->
 		<param name="image_width" value="640" />
 		<param name="image_height" value="480" />
+		<!-- Subscribe to detection topic published by vision node -->
+		<param name="object_topic" value="$(arg output_topic)_detection" />
 	</node>
 
 </launch>

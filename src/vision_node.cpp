@@ -8,6 +8,8 @@
 #include <limits>
 #include <dynamic_reconfigure/server.h>
 #include <vision_object_tracking/VisionConfig.h>
+#include <vision_object_tracking/ObjectDetection.h>
+#include <sensor_msgs/RegionOfInterest.h>
 
 class VisionNode {
 private:
@@ -15,6 +17,7 @@ private:
     image_transport::ImageTransport it_;
     image_transport::Subscriber image_sub_;
     ros::Publisher object_pub_;
+    ros::Publisher detection_pub_;
     image_transport::Publisher mask_pub_;
 
     // configurable via params
@@ -22,6 +25,7 @@ private:
     std::string output_topic_;
     bool visualize_ = true;
     int area_threshold_ = 500; // minimum contour area to consider
+    double detection_area_scale_ = 5.0; // area -> confidence scaling
     bool publish_mask_ = false;
     std::string mask_topic_;
 
@@ -49,12 +53,14 @@ public:
         pnh.param("s_max", s_max_, s_max_);
         pnh.param("v_max", v_max_, v_max_);
         pnh.param("area_threshold", area_threshold_, area_threshold_);
+        pnh.param("detection_area_scale", detection_area_scale_, detection_area_scale_);
         pnh.param("publish_mask", publish_mask_, publish_mask_);
         pnh.param("mask_topic", mask_topic_, std::string("/vision/mask"));
 
         image_sub_ = it_.subscribe(image_topic_, 1,
-                                   &VisionNode::imageCallback, this);
+                       &VisionNode::imageCallback, this);
         object_pub_ = nh_.advertise<geometry_msgs::PointStamped>(output_topic_, 1);
+        detection_pub_ = nh_.advertise<vision_object_tracking::ObjectDetection>(output_topic_ + std::string("_detection"), 1);
         if (publish_mask_) mask_pub_ = it_.advertise(mask_topic_, 1);
 
         if (visualize_) cv::namedWindow("Object Tracking", cv::WINDOW_AUTOSIZE);
@@ -178,6 +184,21 @@ public:
         obj_msg.point.z = 0.0;
 
         object_pub_.publish(obj_msg);
+
+        // publish detection message with bounding box and confidence
+        vision_object_tracking::ObjectDetection det;
+        det.header = msg->header;
+        det.centroid = obj_msg.point;
+        cv::Rect bbox = cv::boundingRect(largest_contour);
+        sensor_msgs::RegionOfInterest roi;
+        roi.x_offset = bbox.x;
+        roi.y_offset = bbox.y;
+        roi.width = bbox.width;
+        roi.height = bbox.height;
+        det.roi = roi;
+        double confidence = std::min(1.0, area / (detection_area_scale_ * area_threshold_));
+        det.confidence = confidence;
+        detection_pub_.publish(det);
 
         // Visualization (optional)
         if (visualize_) {

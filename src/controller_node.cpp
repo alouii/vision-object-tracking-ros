@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PointStamped.h>
+#include <vision_object_tracking/ObjectDetection.h>
 #include <geometry_msgs/Twist.h>
 #include <cmath>
 
@@ -12,6 +13,10 @@ private:
 
     double kp_angular_ = 0.002;
     double kp_linear_ = 0.001;
+
+    double max_linear_ = 0.5;
+    double max_angular_ = 1.0;
+    double conf_threshold_ = 0.1;
 
     int image_width_ = 640;
     int image_height_ = 480;
@@ -25,18 +30,24 @@ public:
         pnh.param("kp_linear", kp_linear_, kp_linear_);
         pnh.param("image_width", image_width_, image_width_);
         pnh.param("image_height", image_height_, image_height_);
-        pnh.param("object_topic", object_topic_, std::string("/object_position"));
+        pnh.param("object_topic", object_topic_, std::string("/object_position_detection"));
+        pnh.param("max_linear", max_linear_, max_linear_);
+        pnh.param("max_angular", max_angular_, max_angular_);
+        pnh.param("conf_threshold", conf_threshold_, conf_threshold_);
 
         object_sub_ = nh_.subscribe(object_topic_, 1,
-                                   &ControllerNode::objectCallback, this);
+                       &ControllerNode::objectCallback, this);
         cmd_pub_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
 
         ROS_INFO("Controller node started. Subscribed to %s", object_topic_.c_str());
     }
 
-    void objectCallback(const geometry_msgs::PointStamped::ConstPtr& msg) {
-        // if object not found (NaN coordinates), stop the robot
-        if (std::isnan(msg->point.x) || std::isnan(msg->point.y)) {
+    void objectCallback(const vision_object_tracking::ObjectDetection::ConstPtr& msg) {
+        // if object not found (NaN coordinates) or low confidence, stop the robot
+        double cx = msg->centroid.x;
+        double cy = msg->centroid.y;
+        double conf = msg->confidence;
+        if (std::isnan(cx) || std::isnan(cy) || std::isnan(conf) || conf < conf_threshold_) {
             geometry_msgs::Twist stop;
             stop.angular.z = 0.0;
             stop.linear.x = 0.0;
@@ -44,12 +55,18 @@ public:
             return;
         }
 
-        double error_x = msg->point.x - image_width_ / 2.0;
-        double error_y = msg->point.y - image_height_ / 2.0;
+        double error_x = cx - image_width_ / 2.0;
+        double error_y = cy - image_height_ / 2.0;
 
         geometry_msgs::Twist cmd;
         cmd.angular.z = -kp_angular_ * error_x;
         cmd.linear.x = -kp_linear_ * error_y;
+
+        // clamp velocities
+        if (cmd.angular.z > max_angular_) cmd.angular.z = max_angular_;
+        if (cmd.angular.z < -max_angular_) cmd.angular.z = -max_angular_;
+        if (cmd.linear.x > max_linear_) cmd.linear.x = max_linear_;
+        if (cmd.linear.x < -max_linear_) cmd.linear.x = -max_linear_;
 
         cmd_pub_.publish(cmd);
     }

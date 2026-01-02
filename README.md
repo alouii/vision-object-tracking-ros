@@ -189,6 +189,22 @@ The repository includes a GitHub Actions workflow (`.github/workflows/ros-ci.yml
 - If using headless systems, set `visualize=false` to avoid GUI issues.
 - Consider adding diagnostic topics (e.g., mask, debug images) and a parameter to publish mask images for offline debugging.
 
+### Mask debugging
+
+You can publish the binary mask used for detection by enabling the `publish_mask` param (default: `false`) and optionally set `mask_topic` (default: `/vision/mask`). The param can be set in `config/vision_params.yaml`, via the launch file, or toggled at runtime with `rqt_reconfigure`.
+
+To view the mask:
+
+```bash
+rosrun rqt_image_view rqt_image_view /vision/mask
+```
+
+Or save mask frames with `image_saver`:
+
+```bash
+rosrun image_view image_saver image:=/vision/mask _filename_format:="/tmp/mask%04d.png"
+```
+
 ## Screenshots 📷
 
 Example output (generated sample images are included in `docs/screenshots`):

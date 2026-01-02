@@ -15,12 +15,15 @@ private:
     image_transport::ImageTransport it_;
     image_transport::Subscriber image_sub_;
     ros::Publisher object_pub_;
+    image_transport::Publisher mask_pub_;
 
     // configurable via params
     std::string image_topic_;
     std::string output_topic_;
     bool visualize_ = true;
     int area_threshold_ = 500; // minimum contour area to consider
+    bool publish_mask_ = false;
+    std::string mask_topic_;
 
     // dynamic reconfigure server
     std::shared_ptr<dynamic_reconfigure::Server<vision_object_tracking::VisionConfig>> dr_srv_;
@@ -46,10 +49,13 @@ public:
         pnh.param("s_max", s_max_, s_max_);
         pnh.param("v_max", v_max_, v_max_);
         pnh.param("area_threshold", area_threshold_, area_threshold_);
+        pnh.param("publish_mask", publish_mask_, publish_mask_);
+        pnh.param("mask_topic", mask_topic_, std::string("/vision/mask"));
 
         image_sub_ = it_.subscribe(image_topic_, 1,
                                    &VisionNode::imageCallback, this);
         object_pub_ = nh_.advertise<geometry_msgs::PointStamped>(output_topic_, 1);
+        if (publish_mask_) mask_pub_ = it_.advertise(mask_topic_, 1);
 
         if (visualize_) cv::namedWindow("Object Tracking", cv::WINDOW_AUTOSIZE);
 
@@ -83,14 +89,37 @@ public:
         cv::GaussianBlur(cv_ptr->image, blurred, cv::Size(5, 5), 0);
         cv::cvtColor(blurred, hsv, cv::COLOR_BGR2HSV);
 
-        cv::inRange(hsv,
-                    cv::Scalar(h_min_, s_min_, v_min_),
-                    cv::Scalar(h_max_, s_max_, v_max_),
-                    mask);
+        // handle hue wrap-around (e.g., red near 0/179 boundary)
+        if (h_min_ <= h_max_) {
+            cv::inRange(hsv,
+                        cv::Scalar(h_min_, s_min_, v_min_),
+                        cv::Scalar(h_max_, s_max_, v_max_),
+                        mask);
+        } else {
+            cv::Mat mask1, mask2;
+            cv::inRange(hsv,
+                        cv::Scalar(h_min_, s_min_, v_min_),
+                        cv::Scalar(179, s_max_, v_max_),
+                        mask1);
+            cv::inRange(hsv,
+                        cv::Scalar(0, s_min_, v_min_),
+                        cv::Scalar(h_max_, s_max_, v_max_),
+                        mask2);
+            cv::bitwise_or(mask1, mask2, mask);
+        }
 
         // clean small noise
         cv::erode(mask, mask, cv::Mat(), cv::Point(-1, -1), 1);
         cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), 2);
+
+        // publish mask for debugging
+        if (publish_mask_ && mask_pub_.getNumSubscribers() > 0) {
+            cv_bridge::CvImage out_msg;
+            out_msg.header = msg->header;
+            out_msg.encoding = sensor_msgs::image_encodings::MONO8;
+            out_msg.image = mask;
+            mask_pub_.publish(out_msg.toImageMsg());
+        }
 
         std::vector<std::vector<cv::Point>> contours;
         cv::findContours(mask, contours,
@@ -171,6 +200,21 @@ public:
 
         visualize_ = config.visualize;
         area_threshold_ = config.area_threshold;
+        // mask publishing
+        bool was_publishing = publish_mask_;
+        publish_mask_ = config.publish_mask;
+        mask_topic_ = config.mask_topic;
+        if (publish_mask_ && !was_publishing) {
+            mask_pub_ = it_.advertise(mask_topic_, 1);
+            ROS_INFO("Mask publishing enabled on %s", mask_topic_.c_str());
+        } else if (!publish_mask_ && was_publishing) {
+            mask_pub_.shutdown();
+            ROS_INFO("Mask publishing disabled");
+        } else if (publish_mask_ && was_publishing) {
+            // re-advertise if topic changed
+            mask_pub_ = it_.advertise(mask_topic_, 1);
+            ROS_INFO("Mask topic set to %s", mask_topic_.c_str());
+        }
 
         ROS_INFO("Reconfigured: h[%d..%d] s[%d..%d] v[%d..%d] area=%d vis=%d",
                  h_min_, h_max_, s_min_, s_max_, v_min_, v_max_, area_threshold_, visualize_);

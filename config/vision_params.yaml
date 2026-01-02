@@ -12,3 +12,5 @@ kp_angular: 0.002
 kp_linear: 0.001
 image_width: 640
 image_height: 480
+publish_mask: false
+mask_topic: /vision/mask

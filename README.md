@@ -107,6 +107,26 @@ roslaunch vision_object_tracking vision_tracking.launch visualize:=false
 - If Gazebo camera topics are not publishing, verify Gazebo is running and the plugin in `urdf/robot.urdf` matches installed gazebo ROS packages.
 - If `rosrun rqt_reconfigure rqt_reconfigure` fails, ensure you have a GUI available or use an X-forwarded session.
 
+## Simulating moving objects and a person
+
+You can spawn a moving colored object (red sphere) and a simple person-like cylinder into the Gazebo world and have them move along simple trajectories.
+
+Run the actors launch which includes the full simulation and spawns/moves models:
+
+```bash
+roslaunch vision_object_tracking actors.launch
+```
+
+The spawner script is `scripts/spawn_and_move.py` and supports parameters (see launch file) such as `path_radius`, `path_speed`, and `person_speed`.
+
+If you want to capture real screenshots from the running simulation, run the launch and use your system screenshot tool or `rosrun image_view image_saver` to save camera topics images:
+
+```bash
+rosrun image_view image_saver image:=/camera/image_raw _filename_format:="/tmp/cam%04d.png"
+```
+
+This helps verify that the vision node detects the red object and that the controller responds to the person or object movements.
+
 ## Run in simulation
 
 Start Gazebo with the provided world and robot, plus the vision and controller nodes:

@@ -7,12 +7,20 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   sensor_msgs
   geometry_msgs
+  message_generation
 )
 
 find_package(OpenCV REQUIRED)
 find_package(dynamic_reconfigure REQUIRED)
 
 catkin_package()
+
+add_message_files(
+  FILES
+  ObjectDetection.msg
+)
+
+generate_messages(DEPENDENCIES std_msgs geometry_msgs sensor_msgs)
 
 include_directories(
   ${catkin_INCLUDE_DIRS}

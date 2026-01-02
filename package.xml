@@ -13,6 +13,8 @@
   <depend>cv_bridge</depend>
   <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
   <depend>gazebo_msgs</depend>
   <depend>rospack</depend>
   <depend>rospy</depend>

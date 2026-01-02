@@ -1,33 +1,35 @@
 <?xml version='1.0'?>
 <sdf version='1.6'>
-  <model name='red_sphere'>
+  <model name='person_cylinder'>
     <static>false</static>
     <link name='link'>
       <pose>0 0 0 0 0 0</pose>
       <inertial>
-        <mass>0.5</mass>
+        <mass>10.0</mass>
         <inertia>
-          <ixx>0.001</ixx>
-          <iyy>0.001</iyy>
-          <izz>0.001</izz>
+          <ixx>1.0</ixx>
+          <iyy>1.0</iyy>
+          <izz>1.0</izz>
         </inertia>
       </inertial>
       <visual name='visual'>
         <geometry>
-          <sphere>
-            <radius>0.06</radius>
-          </sphere>
+          <cylinder>
+            <radius>0.2</radius>
+            <length>1.6</length>
+          </cylinder>
         </geometry>
         <material>
-          <ambient>1 0 0 1</ambient>
-          <diffuse>1 0 0 1</diffuse>
+          <ambient>0.6 0.6 0.6 1</ambient>
+          <diffuse>0.6 0.6 0.6 1</diffuse>
         </material>
       </visual>
       <collision name='collision'>
         <geometry>
-          <sphere>
-            <radius>0.06</radius>
-          </sphere>
+          <cylinder>
+            <radius>0.2</radius>
+            <length>1.6</length>
+          </cylinder>
         </geometry>
       </collision>
     </link>

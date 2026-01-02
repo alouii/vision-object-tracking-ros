@@ -39,3 +39,8 @@ install(TARGETS vision_node controller_node
 install(DIRECTORY launch urdf world
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
+
+install(PROGRAMS
+  scripts/spawn_and_move.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)

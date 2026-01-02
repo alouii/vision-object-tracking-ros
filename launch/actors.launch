@@ -1,0 +1,13 @@
+<launch>
+  <!-- This launch starts Gazebo + robot (simulation.launch) and spawns moving models -->
+  <include file="$(find vision_object_tracking)/launch/simulation.launch"/>
+
+  <!-- Delay to allow Gazebo to start up before spawning -->
+  <node pkg="rosbash" type="sleep" name="sleep" args="5"/>
+
+  <node name="spawn_and_move" pkg="vision_object_tracking" type="spawn_and_move.py" output="screen">
+    <param name="path_radius" value="1.0"/>
+    <param name="path_speed" value="0.7"/>
+    <param name="person_speed" value="0.2"/>
+  </node>
+</launch>

@@ -8,12 +8,15 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   geometry_msgs
   message_generation
+  rostest
 )
 
 find_package(OpenCV REQUIRED)
 find_package(dynamic_reconfigure REQUIRED)
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS message_runtime
+)
 
 add_message_files(
   FILES
@@ -21,6 +24,12 @@ add_message_files(
 )
 
 generate_messages(DEPENDENCIES std_msgs geometry_msgs sensor_msgs)
+
+# rostest
+if (CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest(test/test_detection.test)
+endif()
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
@@ -34,10 +43,12 @@ generate_dynamic_reconfigure_options(
 add_executable(vision_node src/vision_node.cpp)
 target_link_libraries(vision_node ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 add_dependencies(vision_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
+add_dependencies(vision_node ${PROJECT_NAME}_gencpp)
 
 add_executable(controller_node src/controller_node.cpp)
 target_link_libraries(controller_node ${catkin_LIBRARIES})
 add_dependencies(controller_node ${catkin_EXPORTED_TARGETS})
+add_dependencies(controller_node ${PROJECT_NAME}_gencpp)
 
 # Install targets and launch files
 install(TARGETS vision_node controller_node

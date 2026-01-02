@@ -1,0 +1,13 @@
+<launch>
+  <!-- Start Gazebo with world + robot -->
+  <include file="$(find vision_object_tracking)/launch/actors.launch" />
+
+  <!-- Start vision + controller -->
+  <include file="$(find vision_object_tracking)/launch/vision_tracking.launch" />
+
+  <!-- Run the test node -->
+  <test test-name="test_detection" pkg="vision_object_tracking" type="test_detection.py" time-limit="60">
+    <param name="conf_threshold" value="0.05"/>
+    <param name="timeout" value="20.0"/>
+  </test>
+</launch>

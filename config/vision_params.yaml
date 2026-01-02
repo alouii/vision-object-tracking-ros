@@ -14,3 +14,8 @@ image_width: 640
 image_height: 480
 publish_mask: false
 mask_topic: /vision/mask
+detection_area_scale: 5.0
+# controller params
+max_linear: 0.5
+max_angular: 1.0
+conf_threshold: 0.1

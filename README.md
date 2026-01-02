@@ -127,6 +127,28 @@ rosrun image_view image_saver image:=/camera/image_raw _filename_format:="/tmp/c
 
 This helps verify that the vision node detects the red object and that the controller responds to the person or object movements.
 
+## Detection details
+
+The vision node publishes two related topics by default:
+
+- `/object_position` (`geometry_msgs/PointStamped`) — centroid in image pixels
+- `/object_position_detection` (`vision_object_tracking/ObjectDetection`) — richer message including `centroid`, `roi` (bounding box) and `confidence` (0.0..1.0)
+
+The controller subscribes to the detection topic by default and will stop when confidence is below `conf_threshold` (default 0.1). Controller velocities are clamped by `max_linear` and `max_angular` parameters to avoid excessive commands.
+
+## Tests
+
+There is a rostest that launches Gazebo, spawns moving actors and the vision pipeline, and verifies that a detection with sufficient confidence is published:
+
+```bash
+# from your workspace root
+catkin_make run_tests_vision_object_tracking
+# or use rostest directly (may require running roscore)
+rostest vision_object_tracking test_detection.test
+```
+
+Note: the rostest requires Gazebo and may not run on CI unless Gazebo is available.
+
 ## Run in simulation
 
 Start Gazebo with the provided world and robot, plus the vision and controller nodes:
@@ -139,6 +161,8 @@ You can tune parameters (HSV thresholds, visualization, topics) in `vision_track
 
 - image_topic: `/camera/image_raw`
 - output_topic: `/object_position` (publishes `geometry_msgs/PointStamped`)
+
+- output_topic: `/object_position` (publishes `geometry_msgs/PointStamped`) and a richer detection message is published on `/object_position_detection` (type `vision_object_tracking/ObjectDetection` with `centroid`, `roi`, and `confidence`).
 - visualize: `true` (shows OpenCV window)
 - HSV thresholds: `h_min=0, s_min=120, v_min=70, h_max=10, s_max=255, v_max=255`
 
